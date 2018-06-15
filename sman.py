@@ -53,10 +53,15 @@ class Vault():
 
     def __init__(self):
         self.set_env()
-        # print("isready?", self.is_ready())
-        if self.is_ready() == "not_started": self.start_vault()
-        if self.is_ready() == "not_init": self.c = self.init()
-        if self.is_ready() == "sealed": self.c = self.unseal()
+        while self.is_ready() == "not_started":
+            self.start_vault()
+            time.sleep(1)
+        while self.is_ready() == "not_init":
+            self.c = self.init()
+            time.sleep(1)
+        while self.is_ready() == "sealed":
+            self.c = self.unseal()
+            time.sleep(1)
         if self.is_ready(): self.get_client()
 
     def start_consul(self):
@@ -66,10 +71,8 @@ class Vault():
 
     def start_vault(self):
         print("Starting Vault daemon")
-        # c = ["vault", "server", "-config=" + self.BUILD_ROOT + "/vault/config.hcl"]# >/dev/null 2>&1 &"]
         c = "vault server -config=" + self.BUILD_ROOT + "/vault/config.hcl  >/dev/null 2>&1 &"
         r = os.system(c)
-        # r = subprocess.call(c)
         self.RUNNING = 1
         return r
 
@@ -220,8 +223,9 @@ class Sman(Vault):
 
     def sman_add(self, n, h, p, u, pwd, priv_key=""):
         id = self.get_id()[1]
-        if self.validate(n, h, p, u): c.write(s.CONN_PATH + id, id=id, n=n, h=h, u=u, p=p, pwd=pwd)
-        if priv_key != "": s.writef(s.KEY_PATH + id, priv_key)
+        if self.validate(n, h, p, u):
+            c.write(s.CONN_PATH + id, id=id, n=n, h=h, u=u, p=p, pwd=pwd)
+            if priv_key != "": s.writef(s.KEY_PATH + id, priv_key)
         print("\nSaved %s %s %s with id: %s\n" % (h, p, u, id))
 
     def sman_ls(self):
