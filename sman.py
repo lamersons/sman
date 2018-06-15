@@ -181,22 +181,23 @@ class Sman(Vault):
             print(f.format(*row))
             print(s)
 
-    # @staticmethod
     def validate(self, n, h, p, u, passw0rd="asdasd23", priv_key=""):
-#name validation
+        #connection name validation
         if len(n) > 30:# and not n.isalnum():
             self.usage(["add", "validation", "name"])
             return False
+        #username validation
         if len(u) > 30:# and not n.isalnum():
             self.usage(["add", "validation", "user"])
             return False
-#hostname validation
+        #hostname validation
         try:
             socket.inet_aton(h)
         except:
             if not FQDN(h).is_valid:
                 self.usage(["add", "validation", "host"])
                 return False
+        #port validation
         try:
             b = p.isdigit
             if not int(p) > 65500:
