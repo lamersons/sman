@@ -277,7 +277,7 @@ class Sman(Vault):
             f.seek(0)
             c = "ssh -i " + f.name + " " + u + "@" + h
             # print(c)
-        pe = pexpect.spawn(c)#"ssh -i ~/.ssh/opc-ARISOATest.pem opc@144.21.89.0")
+        pe = pexpect.spawn(c)
         if su:
             pe.expect("\~\]\$")
             pe.sendline("sudo su -")
