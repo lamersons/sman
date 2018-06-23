@@ -166,7 +166,9 @@ class Sman(Vault):
                     }
                 },
                 "usage": {
-                    "basic":"do this and that :)"
+                    "basic":"do this and that :)",
+                    "empty_list":"\nList is empty, please add some hosts:\nsman add <name> <host> <port> <user> <password> <path_to_key>",
+                    "connect":"\nConnect to host:\nsman <id>  or  sman <id> su"
                 }
                 }
 
@@ -203,7 +205,8 @@ class Sman(Vault):
         #port validation
         try:
             b = p.isdigit
-            if not int(p) > 65500:
+            if int(p) > 65500:
+                print(int(p), s.is_ready())
                 return False
         except:
             self.usage(["add", "validation", "port"])
@@ -230,7 +233,7 @@ class Sman(Vault):
 
     def sman_ls(self):
         if s.is_ready():
-            if self.get_id()[0][0] == "": self.usage()
+            if self.get_id()[0][0] == "": self.usage(["usage", "empty_list"])
             l = [int(x) for x in self.get_id()[0]]
             t = [["ID", "NAME", "HOST", "PORT", "USERNAME", "SSH-KEY"]]
             for k in sorted(l):
@@ -240,6 +243,7 @@ class Sman(Vault):
                 if len(d[2]) > 30: d[2] = "..." + d[2][-30:]
                 t.append(d)
             self.table(t)
+            s.usage(["usage", "connect"])
 
     def sman_del(self, id):
         if input("(y/n) Are you sure you want to delete: " + id + "?\n") == "y":
@@ -272,7 +276,8 @@ class Sman(Vault):
             f.write(key.encode("UTF-8"))
             f.seek(0)
             c = "ssh -i " + f.name + " " + u + "@" + h
-        pe = pexpect.spawn("ssh -i ~/.ssh/opc-ARISOATest.pem opc@144.21.89.0")
+            # print(c)
+        pe = pexpect.spawn(c)#"ssh -i ~/.ssh/opc-ARISOATest.pem opc@144.21.89.0")
         if su:
             pe.expect("\~\]\$")
             pe.sendline("sudo su -")
