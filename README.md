@@ -16,7 +16,7 @@ Intergated with Hashi Vault to keep passwords, keys and other data secure.
 Let sman handle rsa-keys(generated and stored in Vault), just point to the server where you want to install public key.
 
 
-Product is one night and pack of redbull old, so pretty much completely untested.
+Product is one night and pack of redbull old, so pretty much completely untested. Dependencies are not managed, app is not packed and i'm pretty sure not working outside my envinronment at all, so "fuck you guys i'm going home :D "
 
 
 hello world
