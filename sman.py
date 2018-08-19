@@ -19,7 +19,7 @@ import getopt
 import sys
 import tempfile
 import json
-from operator import itemgetter, attrgetter
+# from operator import itemgetter, attrgetter
 from sys import exit
 # import re
 from ast import literal_eval
@@ -30,8 +30,10 @@ from fqdn import FQDN
 try:
     import hvac
 except ImportError:
-    sys.exit("Please install hvoc module for python3+")
-import pexpect
+    sys.exit("Please install hvac module")
+import pexpect, signal
+from pexpect import pxssh
+import getpass
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -150,7 +152,6 @@ class Vault():
 ##########################################################################################
 #
 # SMAN main class
-# extended by Vault class
 #
 ##########################################################################################
 class Sman(Vault):
@@ -260,6 +261,10 @@ class Sman(Vault):
         return r
 
     def connect(self, id, su=False):
+        def set_pty_size(sig="", data=""):
+            rows, cols = os.popen('stty size', 'r').read().split()
+            pe.setwinsize(int(rows), int(cols))
+
         r = self.sman_get_conn_by_id(id)
         k = self.sman_get_key_by_id(id)
         n = r["data"]["n"]
@@ -269,23 +274,21 @@ class Sman(Vault):
         pwd = r["data"]["pwd"]
         try:
             key = k["data"]["priv_key"]
-        except:
-            c = "/usr/bin/sshpass -p " + pwd + " /usr/bin/ssh " + u + "@" + h
-        else:
-            f = tempfile.NamedTemporaryFile(mode="w+b",delete=True)
+            f = tempfile.NamedTemporaryFile(mode="w+b", delete=True)
             f.write(key.encode("UTF-8"))
             f.seek(0)
-            c = "ssh -i " + f.name + " " + u + "@" + h
-            # print(c)
-        pe = pexpect.spawn(c)
-        if su:
-            pe.expect("\~\]\$")
-            pe.sendline("sudo su -")
-        try:
+            c = "ssh -tt -i " + f.name + " " + u + "@" + h
+            pe = pexpect.spawn(c, encoding="UTF-8")
+            set_pty_size()
+            signal.signal(signal.SIGWINCH, set_pty_size)
+            if su:
+                pe.expect("\~\]\$")
+                pe.sendline("sudo su -")
             pe.interact()
             sys.exit(0)
-        except:
-            raise
+            f.close()
+        except pexpect.ExceptionPexpect as e:
+            print(e)
 
     def switch(self, argv):
         cmd_list = ["add", "del", "ls"]
